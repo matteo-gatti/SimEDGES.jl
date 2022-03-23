@@ -54,7 +54,7 @@ for index in 1:length(hgs)
         #proportional
             metaV = randMetaV(h)
             metaE = proportionalMetaE(h, 0.5)
-            agentV = randAgentV(h,0.8)
+            agentV = randAgentV(h,0.6)
 
         k = 50;
         r1 = k_edges_greedy_dynamic(h,k,metaV,metaE)

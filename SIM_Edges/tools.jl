@@ -198,13 +198,16 @@ function randAgentV(h,molt) #calcola il valore di AgentV tra 1 e il numero di vi
     agentV = Vector{Int}(undef, nhv(h))
     for v in 1:nhv(h)        
         d=0;
+        countN = zeros(Bool, nhv(h))
         for he in collect(keys(gethyperedges(h, v)))
             for v2 in collect(keys(getvertices(h, he)))
-                if v2 != v
-                    d += 1
-                end
+                # if v2 != v
+                #     d += 1
+                # end               --> OCCHIO! nodi contati + volte se nello stesso gruppo
+                countN[v2] = true;
             end
         end
+        d = sum(countN)
         base = trunc(Int, d*molt) #molt in [0,1] indica la base di contagiabilita --> maggiore il valore piu difficile sara contagiare
         agentV[v] = rand(base:d)
     end    
@@ -233,10 +236,17 @@ function simulateA2A!(h::Hypergraph{Bool},
                 aSum = sum(actE[ collect(keys(gethyperedges(h,v))) ])
                 #contagio per nodo
                 vSum = 0
+                countN = zeros(Bool, nhv(h))
                 for i in collect(keys(gethyperedges(h,v)))
-                    temp = sum(actV[collect(keys(getvertices(h,i)))])
-                    vSum += temp
+                    # temp = sum(actV[collect(keys(getvertices(h,i)))])
+                    
+                    # tempArray = deepcopy(actV[collect(keys(getvertices(h,i)))])
+                    # vSum += temp
+                    for j in collect(keys(getvertices(h,i)))
+                        countN[j] = countN[j] || actV[j]
+                    end
                 end
+                vSum = sum(countN)
                 if aSum >= metaV[v] || vSum >= agentV[v]
                     actV_cp[v] = true
                 end
