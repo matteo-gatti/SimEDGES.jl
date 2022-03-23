@@ -53,6 +53,11 @@ export greedy_etss_nodes_static
 export greedy_etss_edges_static
 export greedy_tss_edges_dynamic
 
+#SIM - k-nodes methods
+export k_edges_greedy_static, k_edges_greedy_dynamic
+export k_edges_greedy_static_AGENT
+export randAgentV 
+
 include("tools.jl")
 
 include("models/random_models.jl")
@@ -61,5 +66,6 @@ include("models/dual.jl")
 include("heuristics/additive.jl")
 include("heuristics/subtractive.jl")
 include("heuristics/optimization.jl")
+include("heuristics/k-bounded.jl")
 
 end # module
