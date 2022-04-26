@@ -219,11 +219,13 @@ end
 
 """
 E->V one, until S = E
+senza calcolo multiplo dei vicini
 """
 function simulateA2A!(h::Hypergraph{Bool},
                     actV::Vector{Bool}, actE::Vector{Bool},
                     metaV::Vector{Int}, metaE::Vector{Int},
-                    agentV::Vector{Int};
+                    agentV::Vector{Int},
+                    multipleNeighb::Bool;
                     printme = true, max_step=1_000_000 )
     step = 0
     while step < max_step
@@ -237,20 +239,30 @@ function simulateA2A!(h::Hypergraph{Bool},
                 #contagio per nodo
                 vSum = 0
                 countN = zeros(Bool, nhv(h))
-                for i in collect(keys(gethyperedges(h,v)))
-                    # temp = sum(actV[collect(keys(getvertices(h,i)))])
-                    
-                    # tempArray = deepcopy(actV[collect(keys(getvertices(h,i)))])
-                    # vSum += temp
-                    for j in collect(keys(getvertices(h,i)))
-                        countN[j] = countN[j] || actV[j]
+               if multipleNeighb == true 
+                {
+                    for i in collect(keys(gethyperedges(h,v)))
+                        temp = sum(actV[collect(keys(getvertices(h,i)))])
+                        vSum += temp
+                        if aSum >= metaV[v] || vSum >= agentV[v]
+                            actV_cp[v] = true
+                        end
                     end
-                end
-                vSum = sum(countN)
-                if aSum >= metaV[v] || vSum >= agentV[v]
-                    actV_cp[v] = true
-                end
-
+                }
+               else
+                {
+                 ## ogni vicino viene contato solo una volta anche se condivide
+                 # più di un gruppo con il nodo in esame   
+                    for i in collect(keys(gethyperedges(h,v)))                     
+                        for j in collect(keys(getvertices(h,i)))
+                            countN[j] = countN[j] || actV[j]
+                        end
+                    end
+                    vSum = sum(countN)
+                    if aSum >= metaV[v] || vSum >= agentV[v]
+                        actV_cp[v] = true
+                    end
+                }
             printme && println("$step v=$v $aSum $(metaV[v]) $(actV_cp[v])")
             end
         end

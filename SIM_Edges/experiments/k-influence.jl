@@ -32,8 +32,10 @@ push!(data, "K=50 EDGES Greedy Dynamic" => Vector{Int}[])
 push!(data, "K=100 EDGES Greedy Dynamic" => Vector{Int}[])
 push!(data, "K=50 EDGES Greedy Static" => Vector{Int}[])
 push!(data, "K=100 EDGES Greedy Static" => Vector{Int}[])
-push!(data, "K=50 EDGES Greedy Static AGENT" => Vector{Int}[])
-push!(data, "K=100 EDGES Greedy Static AGENT" => Vector{Int}[])
+push!(data, "K=200 EDGES Greedy Dynamic" => Vector{Int}[])
+push!(data, "K=400 EDGES Greedy Dynamic" => Vector{Int}[])
+push!(data, "K=200 EDGES Greedy Static" => Vector{Int}[])
+push!(data, "K=400 EDGES Greedy Static" => Vector{Int}[])
 
 for index in 1:length(hgs)
     println("Index=$index, $(hg_files[index])")
@@ -49,12 +51,12 @@ for index in 1:length(hgs)
 
 		#random
             Random.seed!(run)        
-            #metaV = randMetaV(h)
-            #metaE = randMetaE(h) 
-        #proportional
             metaV = randMetaV(h)
-            metaE = proportionalMetaE(h, 0.5)
-            agentV = randAgentV(h,0.6)
+            metaE = randMetaE(h) 
+        #proportional
+            #metaV = randMetaV(h)
+            #metaE = proportionalMetaE(h, 0.5)
+            #agentV = randAgentV(h,0.6)
 
         k = 50;
         r1 = k_edges_greedy_dynamic(h,k,metaV,metaE)
@@ -68,20 +70,38 @@ for index in 1:length(hgs)
         k=100;
         r4 = k_edges_greedy_static(h,k,metaV,metaE)
 
-        k = 50;
-        r5 = k_edges_greedy_static_AGENT(h,k,metaV,metaE,agentV)        
 
-        k=100;
-        r6 = k_edges_greedy_static_AGENT(h,k,metaV,metaE,agentV)
+        k = 200;
+        r5 = k_edges_greedy_dynamic(h,k,metaV,metaE)
 
-        [(r1,r2,r3,r4,r5,r6)]
+        k = 400;
+        r6 = k_edges_greedy_dynamic(h,k,metaV,metaE)
+
+        k = 200;
+        r7 = k_edges_greedy_static(h,k,metaV,metaE)
+
+        k=400;
+        r8 = k_edges_greedy_static(h,k,metaV,metaE)
+
+
+       # k = 50;
+        #r5 = k_edges_greedy_static_AGENT(h,k,metaV,metaE,agentV)        
+
+        #k=100;
+        #r6 = k_edges_greedy_static_AGENT(h,k,metaV,metaE,agentV)
+
+        [(r1,r2,r3,r4,r5,r6,r7,r8)]
     end
     push!(data["K=50 EDGES Greedy Dynamic"], [r[1] for r in results])
     push!(data["K=100 EDGES Greedy Dynamic"], [r[2] for r in results])
     push!(data["K=50 EDGES Greedy Static"], [r[3] for r in results])
     push!(data["K=100 EDGES Greedy Static"], [r[4] for r in results])
-    push!(data["K=50 EDGES Greedy Static AGENT"], [r[5] for r in results])
-    push!(data["K=100 EDGES Greedy Static AGENT"], [r[6] for r in results])
+    push!(data["K=200 EDGES Greedy Dynamic"], [r[5] for r in results])
+    push!(data["K=400 EDGES Greedy Dynamic"], [r[6] for r in results])
+    push!(data["K=200 EDGES Greedy Static"], [r[7] for r in results])
+    push!(data["K=400 EDGES Greedy Static"], [r[8] for r in results])
+    #push!(data["K=50 EDGES Greedy Static AGENT"], [r[5] for r in results])
+   # push!(data["K=100 EDGES Greedy Static AGENT"], [r[6] for r in results])
 end
 
 
