@@ -83,13 +83,6 @@ for index in 1:length(hgs)
         k=400;
         r8 = k_edges_greedy_static(h,k,metaV,metaE)
 
-
-       # k = 50;
-        #r5 = k_edges_greedy_static_AGENT(h,k,metaV,metaE,agentV)        
-
-        #k=100;
-        #r6 = k_edges_greedy_static_AGENT(h,k,metaV,metaE,agentV)
-
         [(r1,r2,r3,r4,r5,r6,r7,r8)]
     end
     push!(data["K=50 EDGES Greedy Dynamic"], [r[1] for r in results])

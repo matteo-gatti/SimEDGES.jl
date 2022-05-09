@@ -194,20 +194,27 @@ function proportionalMetaE(h::Hypergraph,prop)
     metaE
 end
 
-function randAgentV(h,molt) #calcola il valore di AgentV tra 1 e il numero di vicini di V.
+function randAgentV(h,molt,multipleNeigh) #calcola il valore di AgentV tra 1 e il numero di vicini di V.
     agentV = Vector{Int}(undef, nhv(h))
     for v in 1:nhv(h)        
         d=0;
-        countN = zeros(Bool, nhv(h))
-        for he in collect(keys(gethyperedges(h, v)))
-            for v2 in collect(keys(getvertices(h, he)))
-                # if v2 != v
-                #     d += 1
-                # end               --> OCCHIO! nodi contati + volte se nello stesso gruppo
-                countN[v2] = true;
+        if multipleNeigh
+            countN = zeros(Bool, nhv(h))
+            for he in collect(keys(gethyperedges(h, v)))
+                for v2 in collect(keys(getvertices(h, he)))
+                    countN[v2] = true;
+                end
+            end
+            d = sum(countN)
+        else
+            for he in collect(keys(gethyperedges(h, v)))
+                for v2 in collect(keys(getvertices(h, he)))
+                     if v2 != v
+                         d += 1
+                    end       
+                end
             end
         end
-        d = sum(countN)
         base = trunc(Int, d*molt) #molt in [0,1] indica la base di contagiabilita --> maggiore il valore piu difficile sara contagiare
         agentV[v] = rand(base:d)
     end    
@@ -226,7 +233,8 @@ function simulateA2A!(h::Hypergraph{Bool},
                     metaV::Vector{Int}, metaE::Vector{Int},
                     agentV::Vector{Int},
                     multipleNeighb::Bool;
-                    printme = true, max_step=1_000_000 )
+                    printme = true, 
+                    max_step=1_000_000)
     step = 0
     while step < max_step
         step += 1
@@ -240,17 +248,14 @@ function simulateA2A!(h::Hypergraph{Bool},
                 vSum = 0
                 countN = zeros(Bool, nhv(h))
                if multipleNeighb == true 
-                {
                     for i in collect(keys(gethyperedges(h,v)))
                         temp = sum(actV[collect(keys(getvertices(h,i)))])
                         vSum += temp
                         if aSum >= metaV[v] || vSum >= agentV[v]
                             actV_cp[v] = true
                         end
-                    end
-                }
-               else
-                {
+                    end                
+               else                
                  ## ogni vicino viene contato solo una volta anche se condivide
                  # più di un gruppo con il nodo in esame   
                     for i in collect(keys(gethyperedges(h,v)))                     
@@ -261,9 +266,9 @@ function simulateA2A!(h::Hypergraph{Bool},
                     vSum = sum(countN)
                     if aSum >= metaV[v] || vSum >= agentV[v]
                         actV_cp[v] = true
-                    end
-                }
-            printme && println("$step v=$v $aSum $(metaV[v]) $(actV_cp[v])")
+                    end                
+                printme && println("$step v=$v $aSum $(metaV[v]) $(actV_cp[v])")
+                end
             end
         end
         #sum(actV_cp) == sum(actV) && return (actvs = sum(actV), step=step-1, actes = sum(actE))

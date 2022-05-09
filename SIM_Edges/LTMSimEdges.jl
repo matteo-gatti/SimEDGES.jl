@@ -31,6 +31,7 @@ export optimize_seed_set_E2VUV
 export simulateE2VUE!
 export optimize_seed_set_E2VUE
 
+
 #Vertix to Edge, until Edge
 export simulateV2EUE!
 export optimize_seed_set_V2EUE
@@ -55,8 +56,12 @@ export greedy_tss_edges_dynamic
 
 #SIM - k-nodes methods
 export k_edges_greedy_static, k_edges_greedy_dynamic
-export k_edges_greedy_static_AGENT
+export k_edges_AGENT
 export randAgentV 
+
+
+#A2A
+export simulateA2A!
 
 include("tools.jl")
 
