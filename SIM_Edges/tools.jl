@@ -221,12 +221,25 @@ function randAgentV(h,molt,multipleNeigh) #calcola il valore di AgentV tra 1 e i
     agentV
 end
 
-
-
+"""
+pi or paramInfluence indica la percentuale di nodi influencer in una rete, 
+pi in [0,1] ed è possibile che un nodo venga scelto più volte per essere un influencer
+andando quindi a sommare le sue frazioni di influenza
+"""
+function randInfluencerC(h, pi)
+    influencerC = zeros(Int, nhv(h))
+    times = pi*nhv(h)
+    for i in 1:times
+        v = rand(1:nhv(h))
+        influencerC[v] += ceil(1/pi)
+    end
+    influencerC
+end
 
 """
-E->V one, until S = E
-senza calcolo multiplo dei vicini
+E->V one, with K budget
+Agent Contagion
+multipleNeighb indica se il conteggio dei vicini è multiplo o singolo in caso di presenza multipla a gruppi comuni
 """
 function simulateA2A!(h::Hypergraph{Bool},
                     actV::Vector{Bool}, actE::Vector{Bool},
@@ -264,6 +277,82 @@ function simulateA2A!(h::Hypergraph{Bool},
                         end
                     end
                     vSum = sum(countN)
+                    if aSum >= metaV[v] || vSum >= agentV[v]
+                        actV_cp[v] = true
+                    end                
+                printme && println("$step v=$v $aSum $(metaV[v]) $(actV_cp[v])")
+                end
+            end
+        end
+        #sum(actV_cp) == sum(actV) && return (actvs = sum(actV), step=step-1, actes = sum(actE))
+        actV .= actV_cp
+        actE_cp = deepcopy(actE)
+        #deb = DataFrame(step=Int[], aSum)
+        for e in 1:nhe(h)
+            if actE_cp[e] == false
+                aSum = sum(actV[ collect(keys(getvertices(h,e))) ])   #conta il numero di vertici attivi all'interno dell'arco in esame
+                if aSum >= metaE[e]
+                    actE_cp[e] = true
+                end
+                printme && println("$step e=$e $aSum $(metaE[e]) $(actE_cp[e])")
+            end
+        end
+        sum(actE_cp) == sum(actE) && return (actvs = sum(actV), step=step-1, actes = sum(actE))
+        actE .= actE_cp
+    end
+    step
+end
+
+
+
+"""
+E->V one, with K budget
+Influencer Contagion
+multipleNeighb indica se il conteggio dei vicini è multiplo o singolo in caso di presenza multipla a gruppi comuni
+"""
+function simulateI2A!(h::Hypergraph{Bool},
+                    actV::Vector{Bool}, actE::Vector{Bool},
+                    metaV::Vector{Int}, metaE::Vector{Int},
+                    agentV::Vector{Int},
+                    contagionC::Vector{Int},
+                    multipleNeighb::Bool;
+                    printme = true, 
+                    max_step=1_000_000)
+    step = 0
+    while step < max_step
+        step += 1
+        
+        actV_cp = deepcopy(actV)
+        for v in 1:nhv(h)
+            #contagio per arco
+            if actV_cp[v] == false
+                aSum = sum(actE[ collect(keys(gethyperedges(h,v))) ])
+                #contagio per nodo
+                vSum = 0
+                countN = zeros(Bool, nhv(h))
+               if multipleNeighb == true 
+                    for i in collect(keys(gethyperedges(h,v)))
+                        
+                        for vn in collect(keys(getvertices(h,i)))
+                            if actV[vn] == 1
+                                tempInfl = actV[vn]*contagionC[vn]
+                                vSum += tempInfl
+                            end
+                        end
+                        
+                        if aSum >= metaV[v] || vSum >= agentV[v]
+                            actV_cp[v] = true
+                        end
+                    end                
+               else                
+                 ## ogni vicino viene contato solo una volta anche se condivide
+                 # più di un gruppo con il nodo in esame   
+                    for i in collect(keys(gethyperedges(h,v)))                     
+                        for j in collect(keys(getvertices(h,i)))
+                            countN[j] = countN[j] || actV[j]
+                        end
+                    end
+                    vSum = sum(countN .* contagionC)
                     if aSum >= metaV[v] || vSum >= agentV[v]
                         actV_cp[v] = true
                     end                

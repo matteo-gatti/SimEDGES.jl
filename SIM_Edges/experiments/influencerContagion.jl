@@ -2,7 +2,7 @@
 SIM scenario
 
 we select k-nodes to maximize the infection on a given hypergraph
-with Agent contagion
+with Influencer contagion
 """
 
 using Pkg, Distributed
@@ -17,7 +17,7 @@ using .LTMSimEdges, SimpleHypergraphs, Random, Serialization
 
 project_path = joinpath(dirname(@__FILE__),"..")
 data_path = joinpath(project_path, "..", "data", "hgs-reduced")
-res_path = joinpath(project_path, "..", "res", "agent-contagion", "k-influence.data")
+res_path = joinpath(project_path, "..", "res", "influencer-contagion", "k-influence.data")
 
 hg_files = readdir(data_path)
 hgs = [prune_hypergraph!(hg_load(joinpath(data_path, hg_file))) for hg_file in hg_files]
@@ -36,24 +36,34 @@ for index in 1:length(hgs)
     	#random
             Random.seed!(run)        
             metaV = randMetaV(h)
-            metaE = randMetaE(h) 
+            metaE = randMetaE(h)
+            neighMultiple = true #count multipli vicini
+            agentV = randAgentV(h,0.9,neighMultiple)
+            #TODO
+            influencerC = randInfluencerC(h,0.4) 
         #proportional
             #metaV = randMetaV(h)
             #metaE = proportionalMetaE(h, 0.5)
 
-        neighMultiple = true #count multipli vicini
+       
+        k = 50;
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"greedy") 
+        
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityVtrue")
+
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"greedy") 
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"greedyMean") 
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"centralityXinfluence") 
+
+        #= neighMultiple = false #count multipli vicini disattivato
         agentV = randAgentV(h,0.9,neighMultiple) 
         k = 50;
         k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"greedy") 
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityVtrue")
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityE")
-        neighMultiple = false #count multipli vicini disattivato
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"greedy") 
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityVfalse")
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityE")
+        k = 50;
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityVfalse") =#
+ 
 
-        #run tests with 100 nodes
-
+        
 
 
     end

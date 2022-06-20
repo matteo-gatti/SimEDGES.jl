@@ -214,7 +214,20 @@ function AGENT_PICK(mode,h)
             countEdgev2 = ceil(countEdge/length(h.he2v[he]))
             push!(U, he => countEdgev2)
         end
-    elseif mode =="centralityE"        
+    elseif mode=="centralityE"  
+        countV = zeros(Int64,nhv(h))     
+        for v in 1:nhv(h)
+            countV[v] = length(h.v2he[v])
+        end
+        for he = 1:nhe(h)
+            countEdge = 0
+            nodes = getvertices(h,he)
+            for n in nodes
+                countEdge += countV[n.first]
+            end
+            countEdgev2 = ceil(countEdge/length(h.he2v[he]))
+            push!(U, he => countEdgev2)
+        end  
     end
     return U
 end
@@ -275,5 +288,111 @@ function k_edges_AGENT(h, k,metaV, metaE,agentV,multipleNeigh,mode)
     init = round((k/nhe(h))*100; digits=2)
 
     println("A2A multiple count $(multipleNeigh): from $(k) edges to $(simres.actes), in total: $(init)% -> $(percentuale)%")
+    simres.actes
+end
+
+function INFLUENCE_PICK(mode, h, influencerC)
+    U = Dict{Int,Int}()
+
+    #@info "some variables" mode h influencerC U
+    if mode=="greedyMean"  
+        # calculate average of influence for edges
+        for he=1:nhe(h)
+            nodes = getvertices(h,he)
+            d = 0
+            for n in nodes
+                d += influencerC[n.first]
+            end
+            meanInfluence = ceil(d/length(nodes)) 
+            push!(U, he => meanInfluence)
+        end
+    elseif mode =="greedy"
+        for he=1:nhe(h)
+            nodes = getvertices(h,he)
+            d = 0
+            for n in nodes
+                d += influencerC[n.first]
+            end
+            push!(U, he => d)
+        end
+    elseif mode =="centralityXinfluence"
+        countV = zeros(Int64,nhv(h))      
+        for v=1:nhv(h)
+            count = 0
+            for i in gethyperedges(h,v)
+                count += length(h.he2v[i.first])
+            end
+            countV[v] = count*influencerC[v]
+        end
+        for he = 1:nhe(h)
+            countEdge = 0
+            nodes = getvertices(h,he)
+            for n in nodes
+                countEdge += countV[n.first]
+            end
+            countEdgev2 = ceil(countEdge/length(h.he2v[he]))
+            push!(U, he => countEdgev2)
+        end
+    end
+    U
+end
+
+function k_edges_INFLUENCER(h, k,metaV, metaE,agentV,influencerC,multipleNeigh,mode)
+    S = Dict{Int,Int}()         #target set
+    U = INFLUENCE_PICK(mode,h,influencerC)     #candidate set
+
+    #@info "some variables" S U
+   
+    for x in 1:k #numero di infezioni possibili      
+        maxv_val, maxv_key = findmax(U)
+        delete!(U, maxv_key)
+
+        S[maxv_key] = maxv_val
+
+        actE = zeros(Bool, nhe(h))
+        actV = zeros(Bool, nhv(h))
+
+        for s in S
+            actE[s.first] = true
+        end
+
+        simres = simulateI2A!(h, actV, actE, metaV, metaE, agentV, influencerC, multipleNeigh; printme = false)
+
+        if simres.actes == nhe(h) #finisce se tutti gli archi sono contagiati
+            break
+        end
+
+        for v in getvertices(h,maxv_key) 
+            for he in gethyperedges(h,v.first)  
+               !haskey(U, he.first) && continue
+               d = 0
+               ###TRY --> se l'arco è infetto rimuoviamo dalla lista
+               if actE[he.first]
+                   delete!(U,he.first)
+                   continue
+               end
+               
+               for v2 in getvertices(h,he.first)   
+                    if !actV[v2.first]
+                       d+=1
+                   end
+               end
+               push!(U,he.first => d)
+           end
+       end
+    end
+
+    actE = zeros(Bool, nhe(h))
+    actV = zeros(Bool, nhv(h))
+
+    for s in S
+        actE[s.first] = true
+    end
+
+    simres = simulateI2A!(h, actV, actE, metaV, metaE, agentV, influencerC, multipleNeigh;  printme = false)
+    percentuale = round((simres.actes/nhe(h))*100; digits=2)
+    init = round((k/nhe(h))*100; digits=2)
+
+    println("I2A multiple count $(multipleNeigh): from $(k) edges to $(simres.actes), in total: $(init)% -> $(percentuale)%")
     simres.actes
 end

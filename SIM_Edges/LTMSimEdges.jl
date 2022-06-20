@@ -54,14 +54,18 @@ export greedy_etss_nodes_static
 export greedy_etss_edges_static
 export greedy_tss_edges_dynamic
 
-#SIM - k-nodes methods
+#G2A
 export k_edges_greedy_static, k_edges_greedy_dynamic
-export k_edges_AGENT
-export randAgentV 
-
 
 #A2A
 export simulateA2A!
+export k_edges_AGENT
+export randAgentV 
+
+#I2A 
+export simulateI2A!
+export k_edges_INFLUENCER
+export randInfluencerC
 
 include("tools.jl")
 
