@@ -1,3 +1,41 @@
+function OPTIMIZATION(h, maxv_key, U, actE, actV, modeOptimization)
+    if modeOptimization == "standard"
+        for v in getvertices(h,maxv_key) 
+            for he in gethyperedges(h,v.first)  
+            !haskey(U, he.first) && continue
+            d = 0
+            ###TRY --> se l'arco è infetto rimuoviamo dalla lista
+            if actE[he.first]
+                delete!(U,he.first)
+                continue
+            end
+            
+            for v2 in getvertices(h,he.first)   
+                    if !actV[v2.first]
+                    d+=1
+                end
+            end
+            push!(U,he.first => d)
+            end
+        end
+    elseif modeOptimization == "none"
+    elseif modeOptimization == "basic"
+        for v in getvertices(h,maxv_key) 
+            for he in gethyperedges(h,v.first)  
+                !haskey(U, he.first) && continue
+                d = 0
+                ###TRY --> se l'arco è infetto rimuoviamo dalla lista
+                if actE[he.first]
+                    delete!(U,he.first)
+                    continue
+                end            
+            end
+        end
+    end
+    return U
+end
+
+
 function k_edges_greedy_dynamic(h, k,metaV, metaE)
     S = Dict{Int,Int}()     #target set
     U = Dict{Int,Int}()     #candidate set
@@ -33,24 +71,7 @@ function k_edges_greedy_dynamic(h, k,metaV, metaE)
             break
         end
 
-        for v in getvertices(h,maxv_key) 
-             for he in gethyperedges(h,v.first)  
-                !haskey(U, he.first) && continue
-                d = 0
-                ###TRY --> se l'arco è infetto rimuoviamo dalla lista
-                if actE[he.first]
-                    delete!(U,he.first)
-                    continue
-                end
-                
-                for v2 in getvertices(h,he.first)   
-                     if !actV[v2.first]
-                        d+=1
-                    end
-                end
-                push!(U,he.first => d)
-            end
-        end
+        U = OPTIMIZATION(h, maxv_key, U, actE, actV, "standard")
     end
 
     actE = zeros(Bool, nhe(h))
@@ -67,8 +88,6 @@ function k_edges_greedy_dynamic(h, k,metaV, metaE)
     println("DYNAMIC: from $(k) edges to $(simres.actes), in total: $(init)% -> $(percentuale)%")
     simres.actes
 end
-
-
 
 function k_edges_greedy_static(h, k,metaV, metaE)
     S = Dict{Int,Int}()     #target set
@@ -104,19 +123,7 @@ function k_edges_greedy_static(h, k,metaV, metaE)
         if simres.actes == nhe(h) #finisce se tutti gli archi sono contagiati
             break
         end
-
-        # for v in getvertices(h,maxv_key) ##modificabile
-        #      for he in gethyperedges(h,v.first)  
-        #         !haskey(U, he.first) && continue
-        #         d = 0                
-        #          for v2 in getvertices(h,he.first)   
-        #              if !actV[v2.first]
-        #                 d+=1
-        #             end
-        #         end
-        #         push!(U,he.first => d)
-        #     end
-        # end
+        
     end
 
     actE = zeros(Bool, nhe(h))
@@ -133,31 +140,6 @@ function k_edges_greedy_static(h, k,metaV, metaE)
     println("STATIC: from $(k) edges to $(simres.actes), in total: $(init)% -> $(percentuale)%")
     simres.actes
 end
-
-#vSum = 0
-#countN = zeros(Bool, nhv(h))
-# if multipleNeighb == true 
-#     for i in collect(keys(gethyperedges(h,v)))
-#         temp = sum(actV[collect(keys(getvertices(h,i)))])
-#         vSum += temp
-#         if aSum >= metaV[v] || vSum >= agentV[v]
-#             actV_cp[v] = true
-#         end
-#     end                
-# else                
-#  ## ogni vicino viene contato solo una volta anche se condivide
-#  # più di un gruppo con il nodo in esame   
-#     for i in collect(keys(gethyperedges(h,v)))                     
-#         for j in collect(keys(getvertices(h,i)))
-#             countN[j] = countN[j] || actV[j]
-#         end
-#     end
-#     vSum = sum(countN)
-#     if aSum >= metaV[v] || vSum >= agentV[v]
-#         actV_cp[v] = true
-#     end                
-# printme && println("$step v=$v $aSum $(metaV[v]) $(actV_cp[v])")
-# end
 
 
 """
@@ -232,7 +214,7 @@ function AGENT_PICK(mode,h)
     return U
 end
 
-function k_edges_AGENT(h, k,metaV, metaE,agentV,multipleNeigh,mode)
+function k_edges_AGENT(h, k,metaV, metaE,agentV,multipleNeigh,mode, modeOptimization)
     S = Dict{Int,Int}()     #target set
     U = AGENT_PICK(mode,h)     #candidate set
 
@@ -256,24 +238,7 @@ function k_edges_AGENT(h, k,metaV, metaE,agentV,multipleNeigh,mode)
             break
         end
 
-        for v in getvertices(h,maxv_key) 
-            for he in gethyperedges(h,v.first)  
-               !haskey(U, he.first) && continue
-               d = 0
-               ###TRY --> se l'arco è infetto rimuoviamo dalla lista
-               if actE[he.first]
-                   delete!(U,he.first)
-                   continue
-               end
-               
-               for v2 in getvertices(h,he.first)   
-                    if !actV[v2.first]
-                       d+=1
-                   end
-               end
-               push!(U,he.first => d)
-           end
-       end
+        U = OPTIMIZATION(h, maxv_key, U, actE, actV, modeOptimization)
     end
 
     actE = zeros(Bool, nhe(h))
@@ -337,7 +302,9 @@ function INFLUENCE_PICK(mode, h, influencerC)
     U
 end
 
-function k_edges_INFLUENCER(h, k,metaV, metaE,agentV,influencerC,multipleNeigh,mode)
+
+
+function k_edges_INFLUENCER(h, k,metaV, metaE,agentV,influencerC,multipleNeigh,mode, modeOptimization)
     S = Dict{Int,Int}()         #target set
     U = INFLUENCE_PICK(mode,h,influencerC)     #candidate set
 
@@ -362,24 +329,7 @@ function k_edges_INFLUENCER(h, k,metaV, metaE,agentV,influencerC,multipleNeigh,m
             break
         end
 
-        for v in getvertices(h,maxv_key) 
-            for he in gethyperedges(h,v.first)  
-               !haskey(U, he.first) && continue
-               d = 0
-               ###TRY --> se l'arco è infetto rimuoviamo dalla lista
-               if actE[he.first]
-                   delete!(U,he.first)
-                   continue
-               end
-               
-               for v2 in getvertices(h,he.first)   
-                    if !actV[v2.first]
-                       d+=1
-                   end
-               end
-               push!(U,he.first => d)
-           end
-       end
+        U = OPTIMIZATION(h, maxv_key, U, actE, actV, modeOptimization)
     end
 
     actE = zeros(Bool, nhe(h))

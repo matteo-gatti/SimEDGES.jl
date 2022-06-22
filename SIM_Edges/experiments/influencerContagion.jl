@@ -47,14 +47,18 @@ for index in 1:length(hgs)
 
        
         k = 50;
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"greedy") 
-        
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityVtrue")
 
-        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"greedy") 
-        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"greedyMean") 
-        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"centralityXinfluence") 
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"greedy", "none") 
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"greedy", "basic") 
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"greedy", "standard") 
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"greedyMean", "none") 
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"greedyMean", "basic") 
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"greedyMean", "standard") 
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"centralityXinfluence", "none") 
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"centralityXinfluence", "basic") 
+        k_edges_INFLUENCER(h,k,metaV,metaE,agentV, influencerC, neighMultiple,"centralityXinfluence", "standard") 
 
+      
         #= neighMultiple = false #count multipli vicini disattivato
         agentV = randAgentV(h,0.9,neighMultiple) 
         k = 50;

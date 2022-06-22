@@ -44,13 +44,16 @@ for index in 1:length(hgs)
         neighMultiple = true #count multipli vicini
         agentV = randAgentV(h,0.9,neighMultiple) 
         k = 50;
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"greedy") 
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityVtrue")
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityE")
-        neighMultiple = false #count multipli vicini disattivato
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"greedy") 
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityVfalse")
-        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityE")
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"greedy", "none") 
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"greedy", "basic") 
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"greedy", "standard") 
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityVtrue", "none")
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityVtrue", "basic")
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityVtrue", "standard")
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityE", "none")
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityE", "basic")
+        k_edges_AGENT(h,k,metaV,metaE,agentV,neighMultiple,"centralityE", "standard")
+
 
         #run tests with 100 nodes
 

@@ -175,21 +175,24 @@ function randMetaE(h)
 end
 
 
-function proportionalMetaV(h::Hypergraph,prop)
+function proportionalMetaV(h::Hypergraph,prop,noise)
     @assert 0.0 < prop <= 1.0
     metaV = Vector{Int}(undef, nhv(h))
+    
     for v in 1:nhv(h)
-        metaV[v] = ceil(length(h.v2he[v])*prop)
+        noiseActual = rand(-noise:noise)
+        metaV[v] = ceil(length(h.v2he[v])*prop+noiseActual)
     end
     metaV
 end
 
 
-function proportionalMetaE(h::Hypergraph,prop)
+function proportionalMetaE(h::Hypergraph,prop,noise)
     @assert 0.0 < prop <= 1.0
     metaE = Vector{Int}(undef, nhe(h))
     for e in 1:nhe(h)
-        metaE[e] = ceil(length(h.he2v[e])*prop)
+        noiseActual = rand(-noise:noise)
+        metaE[e] = ceil(length(h.he2v[e])*prop+noiseActual)
     end
     metaE
 end
@@ -198,11 +201,13 @@ function randAgentV(h,molt,multipleNeigh) #calcola il valore di AgentV tra 1 e i
     agentV = Vector{Int}(undef, nhv(h))
     for v in 1:nhv(h)        
         d=0;
-        if multipleNeigh
+        if !multipleNeigh
             countN = zeros(Bool, nhv(h))
             for he in collect(keys(gethyperedges(h, v)))
                 for v2 in collect(keys(getvertices(h, he)))
-                    countN[v2] = true;
+                    if v2 != v
+                        countN[v2] = true;
+                    end
                 end
             end
             d = sum(countN)
