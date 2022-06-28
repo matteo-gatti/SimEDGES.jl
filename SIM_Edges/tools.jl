@@ -221,7 +221,7 @@ function randAgentV(h,molt,multipleNeigh) #calcola il valore di AgentV tra 1 e i
             end
         end
         base = trunc(Int, d*molt) #molt in [0,1] indica la base di contagiabilita --> maggiore il valore piu difficile sara contagiare
-        agentV[v] = rand(base:d)
+        agentV[v] = max(1,rand(base:d))
     end    
     agentV
 end

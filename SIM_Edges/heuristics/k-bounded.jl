@@ -175,7 +175,7 @@ function AGENT_PICK(mode,h)
             for n in nodes
                 countEdge += countV[n.first]
             end
-            countEdgev2 = ceil(countEdge/length(h.he2v[he]))
+            countEdgev2 = ceil(countEdge)
             push!(U, he => countEdgev2)
         end
     elseif mode=="centralityVtrue"
@@ -193,7 +193,7 @@ function AGENT_PICK(mode,h)
             for n in nodes
                 countEdge += countV[n.first]
             end
-            countEdgev2 = ceil(countEdge/length(h.he2v[he]))
+            countEdgev2 = ceil(countEdge)
             push!(U, he => countEdgev2)
         end
     elseif mode=="centralityE"  
@@ -207,7 +207,7 @@ function AGENT_PICK(mode,h)
             for n in nodes
                 countEdge += countV[n.first]
             end
-            countEdgev2 = ceil(countEdge/length(h.he2v[he]))
+            countEdgev2 = ceil(countEdge)
             push!(U, he => countEdgev2)
         end  
     end

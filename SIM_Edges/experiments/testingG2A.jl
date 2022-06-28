@@ -39,7 +39,11 @@ Random.seed!(1)
 metaV = randMetaV(h)
 metaE = randMetaE(h)
 @info metaV metaE
-@info "TESTING PROPORTIONAL PARAMS"
-metaV = proportionalMetaV(h,0.6,0.1)
-metaE = proportionalMetaE(h,0.6,0.1)
+@info "TESTING PROPORTIONAL PARAMS W/NOISE"
+metaV = proportionalMetaV(h,0.6,0.2)
+metaE = proportionalMetaE(h,0.6,0.2)
+@info metaV metaE
+@info "TESTING PROPORTIONAL PARAMS W/NOISE"
+metaV = proportionalMetaV(h,0.6,0)
+metaE = proportionalMetaE(h,0.6,0)
 @info metaV metaE

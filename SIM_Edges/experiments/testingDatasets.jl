@@ -4,6 +4,10 @@ SIM scenario
 we select k-nodes to maximize the infection on a given hypergraph
 with Influencer contagion
 """
+function mytrunc(value)
+    return trunc(value, digits=2)
+end
+
 function do_stuff(h)
     flush(stdout)
     nv = nhv(h)
@@ -21,13 +25,14 @@ function do_stuff(h)
     e2v = e2v/nv
     v2e = v2e/ne
 
-    x = v2e+e2v
-    y = x/(ns)
-    y = trunc(y*100, digits=2)
+    perV2E = (v2e/nv)*100
+    perE2V = (e2v/ne)*100
 
     println("nv: $(nv), ne: $(ne), ns: $(ns)")
     println("e2v: $(e2v), v2e: $(v2e)")
-    println("x: $(x), y: $(y)")
+    println("v in e: $(mytrunc(perV2E))%, e in v: $(mytrunc(perE2V))%")
+    #println("v in e: $(perV2E)%, e in v: $(perE2V)%")
+
     println("-----")
 end
 
@@ -71,5 +76,9 @@ h[19:20,9] .= true
 do_stuff(h)
 
 
+h = Hypergraph{Bool}(2,3)
 
-
+h[1:2,1] .= true
+h[1:2,2] .= true
+h[1:2,3] .= true
+do_stuff(h)
