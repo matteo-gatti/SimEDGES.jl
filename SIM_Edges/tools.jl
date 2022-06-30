@@ -181,7 +181,7 @@ function proportionalMetaV(h::Hypergraph,prop,noise)
     
     for v in 1:nhv(h)
         noiseActual = rand(-noise:noise)
-        metaV[v] = ceil(length(h.v2he[v])*prop+noiseActual)
+        metaV[v] = ceil(length(h.v2he[v])*prop)
     end
     metaV
 end
@@ -192,7 +192,7 @@ function proportionalMetaE(h::Hypergraph,prop,noise)
     metaE = Vector{Int}(undef, nhe(h))
     for e in 1:nhe(h)
         noiseActual = rand(-noise:noise)
-        metaE[e] = ceil(length(h.he2v[e])*prop+noiseActual)
+        metaE[e] = ceil(length(h.he2v[e])*prop)
     end
     metaE
 end
@@ -220,7 +220,7 @@ function randAgentV(h,molt,multipleNeigh) #calcola il valore di AgentV tra 1 e i
                 end
             end
         end
-        base = trunc(Int, d*molt) #molt in [0,1] indica la base di contagiabilita --> maggiore il valore piu difficile sara contagiare
+        base = ceil(Int, d*molt) #molt in [0,1] indica la base di contagiabilita --> maggiore il valore piu difficile sara contagiare
         agentV[v] = max(1,rand(base:d))
     end    
     agentV

@@ -1,4 +1,4 @@
-function OPTIMIZATION(h, maxv_key, U, actE, actV, modeOptimization)
+function OPTIMIZATION(h, maxv_key, U, actE, actV, modeOptimization,agentV)
     if modeOptimization == "standard"
         for v in getvertices(h,maxv_key) 
             for he in gethyperedges(h,v.first)  
@@ -31,6 +31,28 @@ function OPTIMIZATION(h, maxv_key, U, actE, actV, modeOptimization)
                 end            
             end
         end
+    elseif modeOptimization == "test"
+        for v in getvertices(h,maxv_key) 
+            for he in gethyperedges(h,v.first)  
+            !haskey(U, he.first) && continue
+            d = 0
+            d2= 0
+            ###TRY --> se l'arco è infetto rimuoviamo dalla lista
+            if actE[he.first]
+                delete!(U,he.first)
+                continue
+            end
+            
+            for v2 in getvertices(h,he.first)   
+                    if !actV[v2.first]
+                    d+=1
+                    d2 += agentV[v2.first]
+                end
+            end
+            push!(U,he.first => ceil(d+1/d2))
+            end
+        end   
+    
     end
     return U
 end
@@ -146,7 +168,7 @@ end
 funzione per scegliere il seed set iniziale nel contagio A2A
 opzioni: greedy, centralityVfalse, centralityVtrue
 """
-function AGENT_PICK(mode,h)
+function AGENT_PICK(mode,h,agentV,metaV)
     U = Dict{Int,Int}()
     #init U set con associazione (IdE:#Nodes)
     if mode == "greedy"
@@ -209,36 +231,49 @@ function AGENT_PICK(mode,h)
             end
             countEdgev2 = ceil(countEdge)
             push!(U, he => countEdgev2)
-        end  
+        end 
+    elseif mode == "newCentr"
+        for he=1:nhe(h)
+            nodes = getvertices(h,he)
+            d = 0
+            d2 = 0
+            for n in nodes
+                d += 1
+                d2 += agentV[n.first]
+            end
+            push!(U, he => ceil(d+1/d2))
+        end
     end
     return U
 end
 
 function k_edges_AGENT(h, k,metaV, metaE,agentV,multipleNeigh,mode, modeOptimization)
     S = Dict{Int,Int}()     #target set
-    U = AGENT_PICK(mode,h)     #candidate set
+    U = AGENT_PICK(mode,h,agentV,metaV)     #candidate set
 
    
-    for x in 1:k #numero di infezioni possibili      
-        maxv_val, maxv_key = findmax(U)
-        delete!(U, maxv_key)
+    for x in 1:k #numero di infezioni possibili 
+        if !isempty(U)     
+            maxv_val, maxv_key = findmax(U)
+            delete!(U, maxv_key)
 
-        S[maxv_key] = maxv_val
+            S[maxv_key] = maxv_val
 
-        actE = zeros(Bool, nhe(h))
-        actV = zeros(Bool, nhv(h))
+            actE = zeros(Bool, nhe(h))
+            actV = zeros(Bool, nhv(h))
 
-        for s in S
-            actE[s.first] = true
+            for s in S
+                actE[s.first] = true
+            end
+
+            simres = simulateA2A!(h, actV, actE, metaV, metaE, agentV, multipleNeigh; printme = false)
+
+            if simres.actes == nhe(h) #finisce se tutti gli archi sono contagiati
+                break
+            end
+
+            U = OPTIMIZATION(h, maxv_key, U, actE, actV, modeOptimization,agentV)
         end
-
-        simres = simulateA2A!(h, actV, actE, metaV, metaE, agentV, multipleNeigh; printme = false)
-
-        if simres.actes == nhe(h) #finisce se tutti gli archi sono contagiati
-            break
-        end
-
-        U = OPTIMIZATION(h, maxv_key, U, actE, actV, modeOptimization)
     end
 
     actE = zeros(Bool, nhe(h))
@@ -280,6 +315,15 @@ function INFLUENCE_PICK(mode, h, influencerC)
             end
             push!(U, he => d)
         end
+    elseif mode == "greedyOld"
+        for he=1:nhe(h)
+            nodes = getvertices(h,he)
+            d = 0
+            for n in nodes
+                d += 1
+            end
+            push!(U, he => d)
+        end
     elseif mode =="centralityXinfluence"
         countV = zeros(Int64,nhv(h))      
         for v=1:nhv(h)
@@ -295,7 +339,7 @@ function INFLUENCE_PICK(mode, h, influencerC)
             for n in nodes
                 countEdge += countV[n.first]
             end
-            countEdgev2 = ceil(countEdge/length(h.he2v[he]))
+            countEdgev2 = ceil(countEdge)
             push!(U, he => countEdgev2)
         end
     end
